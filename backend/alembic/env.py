@@ -10,7 +10,8 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # now import app database and models so metadata is populated
-from backend.app.database import DATABASE_URL, Base  # noqa: E402
+from backend.app.database import DATABASE_URL, Base 
+from backend.app.models import keywords, topics, trends, users 
 
 # Interpret the config file for Python logging.
 config = context.config
@@ -20,7 +21,9 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline():
-    url = DATABASE_URL or config.get_main_option("sqlalchemy.url")
+    url = DATABASE_URL
+    if not url:
+        url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -32,10 +35,14 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
+    url = DATABASE_URL
+    if not url:
+        url = config.get_main_option("sqlalchemy.url")
+    
     connectable = engine_from_config(
         config.get_section(config.config_ini_section) or {},
         prefix='sqlalchemy.',
-        url=DATABASE_URL,
+        url=url,
         poolclass=pool.NullPool,
     )
 
@@ -49,4 +56,9 @@ def run_migrations_online():
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    # Only try to run online if we have a valid DATABASE_URL
+    if DATABASE_URL and DATABASE_URL.strip():
+        run_migrations_online()
+    else:
+        # Fall back to offline if no DATABASE_URL
+        run_migrations_offline()
