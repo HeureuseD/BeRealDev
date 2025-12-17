@@ -3,21 +3,20 @@ import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+from backend.app.database import DATABASE_URL, Base 
+from backend.app import models
 
 # ensure project root is importable so `backend` package can be imported
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-# now import app database and models so metadata is populated
-from backend.app.database import DATABASE_URL, Base 
-from backend.app.models import keywords, topics, trends, users 
 
 # Interpret the config file for Python logging.
 config = context.config
 fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = models.Base.metadata
 
 
 def run_migrations_offline():
